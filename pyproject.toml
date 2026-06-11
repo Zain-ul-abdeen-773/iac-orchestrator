@@ -14,6 +14,7 @@ dependencies = [
     # LLM Providers
     "langchain-openai>=0.2.0",
     "langchain-anthropic>=0.2.0",
+    "langchain-aws>=0.2.0",
 
     # Vector DB & Embeddings
     "chromadb>=0.5.0",

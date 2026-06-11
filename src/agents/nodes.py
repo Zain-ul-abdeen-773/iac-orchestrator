@@ -27,11 +27,26 @@ from src.tools.gatekeeper import DevOpsCLI
 def _get_llm():
     """
     Initialize the LLM based on the LLM_PROVIDER environment variable.
-    Supports 'openai' (default) and 'anthropic'.
+    Supports 'openai' (default), 'anthropic', and 'bedrock'.
     """
     provider = os.getenv("LLM_PROVIDER", "openai").lower()
 
-    if provider == "anthropic":
+    if provider == "bedrock":
+        from langchain_aws import ChatBedrockConverse
+
+        model_id = os.getenv(
+            "BEDROCK_MODEL_ID",
+            "us.anthropic.claude-opus-4-5-20251101-v1:0",
+        )
+        region = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
+
+        return ChatBedrockConverse(
+            model=model_id,
+            region_name=region,
+            temperature=0.1,
+            max_tokens=8192,
+        )
+    elif provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
 
         model_name = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
