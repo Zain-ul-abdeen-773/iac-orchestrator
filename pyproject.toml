@@ -2,7 +2,7 @@
 name = "iac-orchestrator"
 version = "0.1.0"
 description = "Autonomous Multi-Agent IaC Orchestrator — A self-healing, security-first Terraform generation pipeline using LangGraph."
-readme = "iac_orchestrator.md"
+readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 

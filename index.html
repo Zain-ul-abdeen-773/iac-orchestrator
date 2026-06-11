@@ -1204,8 +1204,11 @@ resource "aws_db_instance" "main" {
             resetPipeline();
             document.getElementById('pipelineStatus').textContent = 'RUNNING';
             
+            let elapsedSeconds = 0;
+            let timerInterval;
+
             // Clear outputs
-            document.getElementById('terraformOutput').innerHTML = '<div class="placeholder"><div class="placeholder-icon">⚡</div><div class="placeholder-text">Generating...<span class="typing-cursor"></span></div></div>';
+            document.getElementById('terraformOutput').innerHTML = '<div class="placeholder"><div class="placeholder-icon">⚡</div><div class="placeholder-text" id="generationStatus">Generating...<span class="typing-cursor"></span></div></div>';
             document.getElementById('securityFindings').innerHTML = '<div class="placeholder"><div class="placeholder-icon">🛡️</div><div class="placeholder-text">Awaiting code...</div></div>';
             document.getElementById('costBreakdown').innerHTML = '<div class="placeholder"><div class="placeholder-icon">💰</div><div class="placeholder-text">Awaiting analysis...</div></div>';
             document.getElementById('validationResults').innerHTML = '<div class="placeholder"><div class="placeholder-icon">✓</div><div class="placeholder-text">Awaiting validation...</div></div>';
@@ -1218,6 +1221,7 @@ resource "aws_db_instance" "main" {
                 if (data.error) {
                     console.error(data.error);
                     eventSource.close();
+                    if(timerInterval) clearInterval(timerInterval);
                     btn.classList.remove('processing');
                     btn.textContent = 'Error';
                     isProcessing = false;
@@ -1230,7 +1234,15 @@ resource "aws_db_instance" "main" {
 
                 if (node === "retrieve") {
                     activateNode(0);
+                    // Start the timer for the heavy Architect step
+                    elapsedSeconds = 0;
+                    timerInterval = setInterval(() => {
+                        elapsedSeconds++;
+                        const statusEl = document.getElementById('generationStatus');
+                        if(statusEl) statusEl.innerHTML = `Claude Opus is writing HCL... (${elapsedSeconds}s)<span class="typing-cursor"></span>`;
+                    }, 1000);
                 } else if (node === "architect") {
+                    if(timerInterval) clearInterval(timerInterval);
                     activateNode(1);
                     if (update.current_code) renderTerraformCode(update.current_code);
                 } else if (node === "secops") {
@@ -1253,6 +1265,7 @@ resource "aws_db_instance" "main" {
                     document.getElementById('pipelineStatus').textContent = 'COMPLETE';
                     
                     eventSource.close();
+                    if(timerInterval) clearInterval(timerInterval);
                     btn.classList.remove('processing');
                     btn.textContent = 'Execute Pipeline';
                     isProcessing = false;
