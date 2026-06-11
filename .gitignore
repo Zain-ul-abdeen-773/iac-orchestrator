@@ -33,6 +33,9 @@ workspace/.terraform.lock.hcl
 # ChromaDB local storage
 chroma_db/
 
+# Registry doc cache
+data/.cache/
+
 # OS
 .DS_Store
 Thumbs.db

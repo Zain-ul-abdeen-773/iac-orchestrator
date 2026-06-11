@@ -334,6 +334,24 @@ def main():
     """Main entry point for the IaC Orchestrator CLI."""
     print_banner()
 
+    # ── Handle CLI flags ──
+    args = sys.argv[1:]
+
+    if "--load-docs" in args or "--refresh-docs" in args:
+        _handle_load_docs(force="--refresh-docs" in args)
+        if len(args) == 1:
+            return  # Only loading docs, not running pipeline
+
+    if "--help" in args or "-h" in args:
+        console.print("[bold]Usage:[/bold] python main.py [options]")
+        console.print()
+        console.print("  [cyan]--load-docs[/cyan]      Pre-load Terraform docs from Registry API (cached)")
+        console.print("  [cyan]--refresh-docs[/cyan]   Force re-fetch docs from Registry API")
+        console.print("  [cyan]--help, -h[/cyan]       Show this help message")
+        console.print()
+        console.print("[dim]Without flags, starts the interactive IaC generation pipeline.[/dim]")
+        return
+
     # Check for API keys
     provider = os.getenv("LLM_PROVIDER", "openai").lower()
     if provider == "openai" and not os.getenv("OPENAI_API_KEY"):
@@ -372,5 +390,36 @@ def main():
     run_pipeline(user_prompt.strip())
 
 
+def _handle_load_docs(force: bool = False):
+    """Handle the --load-docs / --refresh-docs CLI command."""
+    from src.rag.document_loader import load_documents_to_chromadb
+
+    action = "Refreshing" if force else "Loading"
+    console.print(f"\n[bold]📚 {action} Terraform documentation from Registry API...[/bold]\n")
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        task = progress.add_task(
+            "Fetching docs from registry.terraform.io...", total=None
+        )
+        try:
+            collection = load_documents_to_chromadb(
+                force_reload=force,
+                use_registry=True,
+            )
+            progress.update(task, description="Done!")
+            console.print(
+                f"\n[success]✅ Successfully loaded {collection.count()} "
+                f"document chunks into ChromaDB.[/success]"
+            )
+        except Exception as e:
+            progress.update(task, description="Failed!")
+            console.print(f"\n[error]❌ Failed to load docs: {e}[/error]")
+
+
 if __name__ == "__main__":
     main()
+
