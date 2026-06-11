@@ -1,0 +1,39 @@
+[project]
+name = "iac-orchestrator"
+version = "0.1.0"
+description = "Autonomous Multi-Agent IaC Orchestrator — A self-healing, security-first Terraform generation pipeline using LangGraph."
+readme = "iac_orchestrator.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+
+dependencies = [
+    # Orchestration
+    "langgraph>=0.2.0",
+    "langchain-core>=0.3.0",
+
+    # LLM Providers
+    "langchain-openai>=0.2.0",
+    "langchain-anthropic>=0.2.0",
+
+    # Vector DB & Embeddings
+    "chromadb>=0.5.0",
+    "sentence-transformers>=3.0.0",
+
+    # Validation & Schemas
+    "pydantic>=2.0",
+
+    # Terminal UI
+    "rich>=13.0",
+
+    # Environment
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5.0",
+]
+
+[project.scripts]
+iac-orchestrator = "main:main"
